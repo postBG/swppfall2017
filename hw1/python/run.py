@@ -9,9 +9,9 @@ if __name__ == '__main__':
         # Get 'Where On Earth' ID from location name
         JsonCrawler('https://www.metaweather.com/api/location/search/?query=%s' % location, location)
 
-    # TODO: Acquire woeid from each crawler
-    # and spawn new crawlers for 'https://www.metaweather.com/api/location/[:woeid]'
-    # They should be consistently crawling data, so use active=True.
+    for location in locations:
+        woeid = JsonCrawler.get_by_name(location).get_data()[0].get('woeid')
+        JsonCrawler('https://www.metaweather.com/api/location/%s' % woeid, location, active=True)
 
     print('=== Weather forecast ===')
     for location in locations:

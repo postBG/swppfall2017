@@ -1,25 +1,28 @@
 import requests
-import json
 import threading
 import time
 from queue import Queue
 
 
-# TODO: implement `handle_exception` decorator
+from utils import handle_exception
 
 
 class JsonCrawler(threading.Thread):
     crawlers = dict()
 
     def __init__(self, url, name, period=10., active=False):
-        if name in self.crawlers:
-            self.crawlers[name]._stop()
+        if name in JsonCrawler.crawlers:
+            JsonCrawler.crawlers[name]._stop()
         super(JsonCrawler, self).__init__()
         self._stop_event = threading.Event()
         self.setDaemon(True)
         self.queue = Queue()
 
-        # TODO: initialize instance variables
+        self.active = active
+        self.period = period
+        self.url = url
+        self.name = name
+        JsonCrawler.crawlers[name] = self
 
         self.start()
 
@@ -27,7 +30,7 @@ class JsonCrawler(threading.Thread):
         self._stop_event.set()
 
     def kill(self):
-        del self.crawlers[self.name]
+        del JsonCrawler.crawlers[self.name]
         self._stop()
 
     def run(self):
@@ -41,7 +44,10 @@ class JsonCrawler(threading.Thread):
     def __str__(self):
         return self.name
 
-    # TODO: implement `get_by_name` as class method
+    @classmethod
+    @handle_exception
+    def get_by_name(cls, name):
+        return cls.crawlers[name]
 
     @handle_exception
     def crawl(self):
